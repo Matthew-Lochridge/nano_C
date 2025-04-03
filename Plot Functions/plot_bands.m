@@ -11,7 +11,7 @@
 function plot_bands(E, E_max, structure, plot_struct)
     interp = 'latex';
     figure();
-    Ef = max(E(:,2)); % set zero-point of energy
+    Ef = max(E(:,4)); % set zero-point of energy
     plot(E-Ef);
     xlabel(plot_struct.k.label,'Interpreter',interp);
     ylabel('$E$ (eV)','Interpreter',interp);
@@ -22,4 +22,3 @@ function plot_bands(E, E_max, structure, plot_struct)
     title(structure);
     savefig(append('Figures/',structure,'_bands.fig'));
 end
-

@@ -38,6 +38,7 @@ function [E, psi] = nano_C(structure)
     r_C = 73e-12/r_H; % atomic radius of sp2-bonded carbon
     a_CC = 1.42e-10/r_H; % carbon-carbon bond length in graphene
     a_CH = 1.0919e-10/r_H; % carbon-hydrogen bond length in methane
+    a_d = 3.56683e-10/r_H; % diamond lattice constant
 
     % empirical pseudopotential parameters
     E_cut = 15; % cutoff energy (Ry)
@@ -47,7 +48,7 @@ function [E, psi] = nano_C(structure)
     N_a = 1; % number of primitive motifs along a tube within the supercell (axial); Set to 1 for an infinite tube.
     N_x = 0; % separation between finite ribbons or tubes in primitive translations (axial); Set to 0 for an infinite ribbon or tube.
     N_y = 4; % separation between ribbons in primitive translations (transverse in-plane)
-    N_z = 5; % separation between ribbons, tubes, or graphene sheets in primitive translations (transverse, out-of-plane for ribbons and graphene)
+    N_z = 3; % separation between ribbons, tubes, or graphene sheets in primitive translations (transverse, out-of-plane for ribbons and graphene)
 
     % plot settings
     E_range = 20; % maximum energy shown in band plot (eV)
@@ -67,7 +68,7 @@ function [E, psi] = nano_C(structure)
     end
 
     % compute energy bands and corresponding wavefunctions
-    [E, psi] = bands(real(k), R_gen, R, tau, r_atom, E_cut, max_G);
+    [E, psi] = bands(real(k), R_gen, R, tau, r_atom, a_d, E_cut, max_G);
     plot_bands(E*Ry, E_range, structure, plot_struct);
     plot_wavefunc(psi, structure, plot_struct);
 end
