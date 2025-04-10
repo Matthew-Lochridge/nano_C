@@ -1,24 +1,20 @@
 % Author: Matthew Lochridge
 % Term Project for MSEN 5377 (Spring 2025)
 %
-% Function called by nano_C to plot energy bands
+% Function called by main() to plot energy bands
 % Inputs
 %   E = array of energy bands in Ry ordered as (k,G)
-%   E_max = maximum energy shown in band plot in eV
-%   structure = name of selected nanostructure
-%   plot_struct = container for axis settings
+%   config = container for axis settings
 
-function plot_bands(E, E_max, structure, plot_struct)
-    interp = 'latex';
-    figure();
+function plot_bands(E, config)
     Ef = max(E(:,4)); % set zero-point of energy
+    figure();
     plot(E-Ef);
-    xlabel(plot_struct.k.label,'Interpreter',interp);
-    ylabel('$E$ (eV)','Interpreter',interp);
-    axis([1 size(E,1) -E_max E_max]);
-    set(gca,'TickLabelInterpreter',interp);
-    xticks(plot_struct.k.ticks);
-    xticklabels(plot_struct.k.ticklabels);
-    title(structure);
-    savefig(append('Figures/',structure,'_bands.fig'));
+    xlabel(config.k.label);
+    ylabel(config.E.label);
+    axis([1, size(E,1), -config.E.lim, config.E.lim]);
+    xticks(config.k.ticks);
+    xticklabels(config.k.ticklabels);
+    title(config.nanostructure);
+    savefig(append('Figures/',config.nanostructure,'_bands.fig'));
 end

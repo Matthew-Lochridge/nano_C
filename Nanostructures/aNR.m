@@ -1,36 +1,27 @@
 % Author: Matthew Lochridge
 % Term Project for MSEN 5377 (Spring 2025)
 %
-% Function called by select_param to define superlattice parameters specific to armchair nanoribbons (infinite length).
+% Function called by select_param() to define superlattice parameters specific to armchair nanoribbons (infinite length).
 % Inputs:
-%   r_C = atomic radius of sp2-bonded carbon in Bohr radii
-%   a_CC = carbon-carbon bond length in Bohr radii
-%   a_CH = carbon-hydrogen bond length in Bohr radii
-%   N_y = separation between ribbons in sqrt(3)*a_CC (transverse in-plane)
-%   N_z = separation between ribbons in sqrt(3)*a_CC (transverse out-of-plane)
-%   N_dw = width of a ribbon in dimer lines
-%   n_points = number of real- and reciprocal-space points to generate
-%   n_ticks = number of independent axis ticks
+%   param = container for nanostructure parameters
+%   config = container for figure/axis settings
 % Outputs:
-%   k = reciprocal-space points at which to compute eigenenergies
-%   tau = atomic positions within the supercell, ordered by carbon first and hydrogen last
-%   r_atom = atomic radii, ordered as tau
-%   R_gen = generators of superlattice vectors
-%   R = lattice translation over which to evaluate wavefunctions
-%   plot_struct = container for axis settings
+%   updated param and config
 %
 % References:
-%   [3] M. V. Fischetti and W. G. Vandenberghe. 
+%   [4] M. V. Fischetti and W. G. Vandenberghe. 
 %       Advanced Physics of Electron Transport in Semiconductors and Nanostructures.
 %       Springer (2016).
 
-function [k, tau, r_atom, R_gen, R, plot_struct] = aNR(r_C, a_CC, a_CH, N_y, N_z, N_dw, n_points, n_ticks)
-    plot_struct = struct();
+function [param, config] = aNR(param, config)
+
+    a_CC = param.a_CC;
+    a_CH = param.a_CH;
 
     x_hat = [1; 0; 0]; % unit vector along ribbon length
     y_hat = [0; 1; 0]; % unit vector along ribbon width
     a_hat = [1/2; sqrt(3)/2; 0]; % unit vector of primitive cell
-    N_w = N_dw/2; % number of primitive cells across ribbon width
+    N_w = param.N_dw/2; % number of primitive cells across ribbon width
     n_C = 4*N_w; % number of carbon atoms within supercell
     n_H = 4; % number of hydrogen atoms to terminate dangling edge bonds
     tau = zeros(3,n_C+n_H);
@@ -55,24 +46,26 @@ function [k, tau, r_atom, R_gen, R, plot_struct] = aNR(r_C, a_CC, a_CH, N_y, N_z
     tau(:,n_C+3) = (mod(N_w,1)>0)*(tau(:,1)+floor(N_w)*sqrt(3)*a_CC*y_hat+a_CH*a_hat) + (mod(N_w,1)==0)*(tau(:,2)+floor(N_w-1)*sqrt(3)*a_CC*y_hat+a_CH*(a_hat-x_hat));
     tau(:,n_C+4) = (mod(N_w,1)>0)*(tau(:,4)+floor(N_w)*sqrt(3)*a_CC*y_hat+a_CH*(a_hat-x_hat)) + (mod(N_w,1)==0)*(tau(:,3)+floor(N_w-1)*sqrt(3)*a_CC*y_hat+a_CH*a_hat);
 
-    tau = tau - ones(size(tau)).*mean(tau,2); % shift coordinate origin to center of nanostructure
+    param.tau = tau - ones(size(tau)).*mean(tau,2); % shift coordinate origin to center of nanostructure
 
     % atomic radii
-    r_atom = ones(1,size(tau,2));
-    r_atom(1:n_C) = r_C;
+    param.r_atom = ones(1,size(tau,2));
+    param.r_atom(1:n_C) = param.r_C;
 
     % generators of superlattice vectors
-    R_gen = [3*a_CC 0 0; 0 range(tau(2,:))+N_y*sqrt(3)*a_CC 0; 0 0 N_z*sqrt(3)*a_CC];
-    R = (0:1/(n_points-1):1)'*(R_gen(:,1))';
-    plot_struct.R.label = {'$x \ (3a_{CC})$'};
-    plot_struct.R.ticklabels = 0:1/(n_ticks-1):1;
-    plot_struct.R.ticks = n_points*plot_struct.R.ticklabels;
+    param.R_gen = [3*a_CC 0 0; 0 range(tau(2,:))+param.N_y*sqrt(3)*a_CC 0; 0 0 param.N_z*sqrt(3)*a_CC];
 
-    % axial k
-    k_max = pi/vecnorm(R_gen(:,1));
-    dk = k_max/(n_points-1);
-    k = (0:dk:k_max)'*[1 0 0];
-    plot_struct.k.label = {'$k_x \ (\pi/3a_{CC})$'};
-    plot_struct.k.ticklabels = 0:1/(n_ticks-1):1;
-    plot_struct.k.ticks = n_points*plot_struct.k.ticklabels;
+    % real-space path along ribbon axis
+    param.R = (0:1/(config.n_points-1):1)'*(param.R_gen(:,1))';
+    config.R.label = {'$x \ (3a_{CC})$'};
+    config.R.ticklabels = 0:1/(config.n_ticks-1):1;
+    config.R.ticks = config.n_points*config.R.ticklabels;
+
+    % reciprocal-space path along ribbon axis
+    k_max = pi/vecnorm(param.R_gen(:,1));
+    dk = k_max/(config.n_points-1);
+    param.k = (0:dk:k_max)'*[1 0 0];
+    config.k.label = {'$k_x \ (\pi/3a_{CC})$'};
+    config.k.ticklabels = 0:1/(config.n_ticks-1):1;
+    config.k.ticks = config.n_points*config.k.ticklabels;
 end

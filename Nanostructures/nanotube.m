@@ -1,32 +1,26 @@
 % Author: Matthew Lochridge
 % Term Project for MSEN 5377 (Spring 2025)
 %
-% Function called by select_param to define superlattice parameters specific to nanotubes.
+% Function called by select_param() to define superlattice parameters specific to nanotubes.
 % Inputs:
-%   r_C = atomic radius of sp2-bonded carbon in Bohr radii
-%   a_CC = carbon-carbon bond length in Bohr radii
-%   a_CH = carbon-hydrogen bond length in Bohr radii
-%   N_a = number of primitive motifs along a tube within the supercell (axial); Input 1 for an infinite tube.
-%   N_x = separation between finite tubes in a_CC (axial); Input 0 for an infinite tube.
-%   N_z = separation between tubes in a_CC (transverse)
-%   N_1, N_2 = numbers of each primitive graphene translations making up the wrapping vector
-%   n_points = number of real- and reciprocal-space points to generate
-%   n_ticks = number of independent axis ticks
+%   N_1, N_2 = numbers of each primitive graphene translation for wrapping vector
+%   param = container for nanostructure parameters
+%   config = container for figure/axis settings
 % Outputs:
-%   k = reciprocal-space points at which to compute eigenenergies
-%   tau = atomic positions within the supercell, ordered by carbon first and hydrogen last
-%   r_atom = atomic radii, ordered as tau
-%   R_gen = generators of superlattice vectors
-%   R = lattice translation over which to evaluate wavefunctions
-%   plot_struct = container for axis settings
+%   updated param and config
 %
 % References:
-%   [4] J. W. Mintmire and C. T. White. 
+%   [5] J. W. Mintmire and C. T. White. 
 %       "Electronic and structural properties of carbon nanotubes."
 %       Carbon 33 7 (1995).
 
-function [k, tau, r_atom, R_gen, R, plot_struct] = nanotube(r_C, a_CC, a_CH, N_a, N_x, N_z, N_1, N_2, n_points, n_ticks)
-    plot_struct = struct();
+function [param, config] = nanotube(N_1, N_2, param, config)
+
+    a_CC = param.a_CC;
+    a_CH = param.a_CH;
+    N_a = param.N_a;
+    N_x = param.N_x;
+    N_z = param.N_z;
 
     x_hat = [1; 0; 0];
     y_hat = [0; 1; 0];
@@ -78,25 +72,27 @@ function [k, tau, r_atom, R_gen, R, plot_struct] = nanotube(r_C, a_CC, a_CH, N_a
         end
     end
 
-    tau = tau - ones(size(tau)).*mean(tau,2); % shift coordinate origin to center of nanostructure
+    param.tau = tau - ones(size(tau)).*mean(tau,2); % shift coordinate origin to center of nanostructure
 
     % atomic radii
-    r_atom = ones(1,size(tau,2));
-    r_atom(1:n_C) = r_C;
+    param.r_atom = ones(1,size(tau,2));
+    param.r_atom(1:n_C) = param.r_C;
 
     % generators of superlattice vectors
     tau_range = range(tau,2);
-    R_gen = [(N_x>0)*(tau_range(1)+N_x*a_CC)+(N_x==0)*N_a*vecnorm(L) 0 0; 0 tau_range(2)+N_z*a_CC 0; 0 0 tau_range(3)+N_z*a_CC];
-    R = (0:1/(n_points-1):1)'*(R_gen(:,1))';
-    plot_struct.R.label = {'$x \ (a_x)$'};
-    plot_struct.R.ticklabels = 0:1/(n_ticks-1):1;
-    plot_struct.R.ticks = n_points*plot_struct.R.ticklabels;
+    param.R_gen = [(N_x>0)*(tau_range(1)+N_x*a_CC)+(N_x==0)*N_a*vecnorm(L) 0 0; 0 tau_range(2)+N_z*a_CC 0; 0 0 tau_range(3)+N_z*a_CC];
 
-    % axial k
-    k_max = pi/vecnorm(R_gen(:,1));
-    dk = k_max/(n_points-1);
-    k = (0:dk:k_max)'*[1 0 0];
-    plot_struct.k.label = {'$k_x \ (\pi/a_x)$'};
-    plot_struct.k.ticklabels = 0:1/(n_ticks-1):1;
-    plot_struct.k.ticks = n_points*plot_struct.k.ticklabels;
+    % real-space path along tube axis
+    param.R = (0:1/(config.n_points-1):1)'*(param.R_gen(:,1))';
+    config.R.label = {'$x \ (a_x)$'};
+    config.R.ticklabels = 0:1/(config.n_ticks-1):1;
+    config.R.ticks = config.n_points*config.R.ticklabels;
+
+    % reciprocal-space path along tube axis
+    k_max = pi/vecnorm(param.R_gen(:,1));
+    dk = k_max/(config.n_points-1);
+    param.k = (0:dk:k_max)'*[1 0 0];
+    config.k.label = {'$k_x \ (\pi/a_x)$'};
+    config.k.ticklabels = 0:1/(config.n_ticks-1):1;
+    config.k.ticks = config.n_points*config.k.ticklabels;
 end
