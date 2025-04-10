@@ -6,11 +6,11 @@
 %   param = container for nanostructure parameters
 %   config = container for figure/axis settings
 
-function plot_supercell(param, config)
+function plot_supercell(param, nanostructure)
+    config = supercell_config(param, nanostructure);
     r_H = param.r_H*10^9;
     tau = r_H*param.tau;
     r_atom = param.r_atom;
-    limits = max(vecnorm(r_H*param.R_gen))*[-1 1 -1 1 -1 1]/2; % kron(vecnorm(r_H*param.R_gen)',[-1 1])/2;
     figure();
     hold on;
     plot3(tau(1,r_atom>1), tau(2,r_atom>1), tau(3,r_atom>1), config.atom.C);
@@ -25,11 +25,29 @@ function plot_supercell(param, config)
             end
         end
     end
-    hold off;
     xlabel(config.xlabel);
     ylabel(config.ylabel);
     zlabel(config.zlabel);
-    axis(limits);
-    legend(config.legend);
+    axis(config.limits);
     title(config.title);
+    legend(config.legend);
+    hold off;
+end
+
+function config = supercell_config(param, nanostructure)
+    config = struct();
+    config.limits = 10^9*param.r_H*max(vecnorm(param.R_gen))*[-1 1 -1 1 -1 1]/2; % kron(vecnorm(10^9*r_H*param.R_gen)',[-1 1])/2;
+    config.abs_tol = 1e-2;
+    config.title = append(nanostructure,' supercell');
+    config.xlabel = '$x$ (nm)';
+    config.ylabel = '$y$ (nm)';
+    config.zlabel = '$z$ (nm)';
+    config.atom.C = '.k';
+    config.atom.H = 'ok';
+    config.bond.C = '-k';
+    config.bond.H = '--k';
+    config.legend = {'C'};
+    if sum(param.r_atom==1) > 0 % hydrogen included
+        config.legend{end+1} = 'H';
+    end
 end

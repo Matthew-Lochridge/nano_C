@@ -90,18 +90,7 @@ function [E, psi] = main(nanostructure)
         return;
     end
     if ~strcmpi(nanostructure,'graphene') % display supercell
-        supercell_config = struct();
-        supercell_config.xlabel = '$x$ (nm)';
-        supercell_config.ylabel = '$y$ (nm)';
-        supercell_config.zlabel = '$z$ (nm)';
-        supercell_config.atom.C = '.k';
-        supercell_config.atom.H = 'ok';
-        supercell_config.bond.C = '-k';
-        supercell_config.bond.H = '--k';
-        supercell_config.legend = {'C','H'};
-        supercell_config.title = append(nanostructure, ' supercell');
-        supercell_config.abs_tol = 1e-2;
-        plot_supercell(param, supercell_config);
+        plot_supercell(param, config.nanostructure);
     end
 
     % compute energy bands and corresponding wavefunctions
