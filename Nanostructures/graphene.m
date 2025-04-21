@@ -29,19 +29,33 @@ function [param, config] = graphene(param, config)
     config.R.label = {'$x \ (\sqrt{3}a_{CC})$'};
     config.R.ticklabels = 0:1/(config.n_ticks-1):1;
     config.R.ticks = config.n_points*config.R.ticklabels;
+
+    K = 4*pi/(3*sqrt(3)*param.a_CC)*[1/2 sqrt(3)/2 0];
+    M = 2*pi/(3*param.a_CC)*[0 1 0];
+    D = sqrt(vecnorm(K)^2 - vecnorm(M)^2)*[-1 0 0];
+    n_step = config.n_points/3 - 1;
+
     
     % reciprocal-space path along boundary of irreducible wedge of BZ
-    K = 4*pi/(3*sqrt(3)*param.a_CC);
-    M = 2*pi/(3*param.a_CC);
-    D = sqrt(K^2 - M^2);
-    k1 = (M:-M/(config.n_points/3-1):0)'*[sqrt(3)/2 1/2 0];
-    nk1 = size(k1,1);
-    k2 = (0:K/(config.n_points/3-1):K)'*[1/2 sqrt(3)/2 0];
-    nk2 = size(k2,1);
-    k3 = (0:D/(config.n_points/3-1):D)'*[1/2 -sqrt(3)/2 0];
-    nk3 = size(k3,1);
-    param.k = [k1; k2; k3 + ones(size(k3)).*k2(end,:)];
-    config.k.ticks = [1, nk1+1, nk1+nk2+1, nk1+nk2+nk3-1];
+    param.k = [(1:-1/n_step:0)'*M; (0:1/n_step:1)'*K; (0:1/n_step:1)'*D + ones(n_step+1,3).*K];
+    config.k.ticks = [1, (n_step+1)+1, 2*(n_step+1)+1, 3*(n_step+1)-1];
     config.k.ticklabels = {'$M$' '$\Gamma$' '$K$' '$M$'};
     config.k.label = {'$k$'};
+    %}
+    %{
+    % full irreducible BZ
+    dK = (0:1/n_step:1)'*K;
+    IBZ = [];
+    for n = 1:n_step+1
+        y_slice = (vecnorm(M):-vecnorm(K)/n_step:dK(n,2))';
+        IBZ = [IBZ; [dK(n,1)*ones(size(y_slice)) y_slice zeros(size(y_slice))]];
+    end
+    param.k = IBZ;
+    config.k.label = {'$k_x$' '$k_y$'};
+    config.k.text = {"$\Gamma$" "$M$" "$K$" "$K'$"};
+    config.k.sym_points = [zeros(1,3); M; K; K-[vecnorm(K) 0 0]];
+    config.vertex = [M; K; K-[vecnorm(K) 0 0]; [vecnorm(K) 0 0]];
+    config.sym_proj = [-1 0 0; cos(pi/6) -sin(pi/6) 0; -cos(pi/6) -sin(pi/6) 0; 0 -1 0];
+    %}
+
 end

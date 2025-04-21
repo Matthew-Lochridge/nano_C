@@ -7,17 +7,16 @@
 %   U_C = empirical pseudopotential function handle for carbon atoms
 %   U_H = empirical pseudopotential function handle for hydrogen atoms
 % Output:
-%   E = array of energy bands in Ry ordered as (k,G)
-%   psi = cell of wavefunctions ordered by increasing eigenenergy
+%   updated param
 %
 % References:
-%   [1] W. G. Vandenberghe. 
-%       bulk_pseudo_william.m.
+%   [1] W. G. Vandenberghe, bulk_pseudo_william.m (UT Dallas)
 %   [4] M. V. Fischetti and W. G. Vandenberghe. 
 %       Advanced Physics of Electron Transport in Semiconductors and Nanostructures.
 %       Springer (2016).
+%   [7] P. Hadley, cnt.m (TU Graz)
 
-function [E, psi] = bands(param, U_C, U_H)
+function param = bands(param, U_C, U_H)
 
     k = param.k;
     R = param.R;
@@ -37,12 +36,14 @@ function [E, psi] = bands(param, U_C, U_H)
     G = G(G.^2*ones(3,1)<param.E_cut,:); % retain all G vectors within the cut-off
     n_G = size(G,1);
     GmG2 = kron(ones(1,n_G), G) - kron(ones(n_G,1), reshape(G',1,3*n_G)); % compute differences between G and G' (size 3*nG^2) [1]
-    
-    % off-diagonal (potential) elements of Hamiltonian
-    U = zeros(n_G);
-    disp('Computing pseudopotentials...')
+    param.G = G;
+    param.GmG2 = GmG2;
+
+    % compute energy bands
+    U = zeros(n_G); % off-diagonal (potential) elements of Hamiltonian
+    disp('Computing pseudopotentials...');
     tic
-    for i_atom = 1:n_atoms
+    parfor i_atom = 1:n_atoms
         if r_atom(i_atom) == 1 % hydrogen
             U = U + (1/V_cell)*exp(1i*(GmG2)*kron(eye(n_G),tau(:,i_atom))).*U_H(sqrt(abs(GmG2).^2*kron(eye(n_G),ones(3,1))));
         else % carbon
@@ -52,7 +53,7 @@ function [E, psi] = bands(param, U_C, U_H)
     toc
     E = zeros(n_k,n_G);
     u = cell(n_k,1);
-    disp('Computing eigenvalues...')
+    disp('Computing eigenvalues...');
     tic
     parfor i_k = 1:n_k
         T = (spdiags(sum(abs(G+ones(n_G,1)*k(i_k,:)).^2, 2), 0, n_G, n_G)); % diagonal (kinetic) elements of Hamiltonian
@@ -60,10 +61,18 @@ function [E, psi] = bands(param, U_C, U_H)
         E(i_k,:) = sort(real(ones(1,n_G)*E_mat));
         u{i_k} = sort(u_mat, 1);
     end
+    n_C = sum(r_atom>1); % number of carbon atoms
+    n_H = sum(r_atom==1); % number of hydrogen atoms
+    n_valence = (4*n_C+n_H)/2; % number of valence bands
+    param.E_bands = E - max(E(:,n_valence)); % rescale energy bands
+    param.u = u;
     toc
+
+    %{
+    % compute wavefunctions
     n_psi = 1; % number of wavefunctions to compute, starting from the lowest band
     psi = zeros(n_R,n_k,n_psi);
-    disp('Computing wavefunctions...')
+    disp('Computing wavefunctions...');
     tic
     for i_psi = 1:n_psi
         for i_k = 1:n_k
@@ -72,6 +81,7 @@ function [E, psi] = bands(param, U_C, U_H)
             end
         end
     end
+    param.psi = psi;
     toc
-    disp('Finished.');
+    %}
 end

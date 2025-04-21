@@ -7,12 +7,11 @@
 %                   e.g. '9-AGNR', '8-ZGNR', '(5,5)-CNT', etc.
 %                   If unspecified, 'graphene' is called by default.
 % Output:
-%   E = array of energy bands in Ry ordered as (k,G)
-%   psi = cell of wavefunctions ordered by increasing eigenenergy
+%   param = struct containing crystal parameters, energy bands, etc.
+%   config = figure/plot settings
 %
 % References:
-%   [1] W. G. Vandenberghe. 
-%       bulk_pseudo_william.m.
+%   [1] W. G. Vandenberghe, bulk_pseudo_william.m (UT Dallas)
 %   [2] Y. Kurokawa, S. Nomura, T. Takemori, and Y. Aoyagi.
 %       "Large-scale calculation of optical dielectric functions of diamond nanocrystallites."
 %       Phys. Rev. B 61 12616 (2000).
@@ -28,11 +27,12 @@
 %   [6] B. Liu, S. G. Johnson, J. D. Joannopoulos, and L. Lu.
 %       "Generalized Gilat–Raubenheimer method for density-of-states calculation in photonic crystals."
 %       J. Opt. 20 044005 (2018)
-%   [7] J. Fang, W. G. Vandenberghe, and M. V. Fischetti. 
+%   [7] P. Hadley, cnt.m (TU Graz)
+%   [8] J. Fang, W. G. Vandenberghe, and M. V. Fischetti. 
 %       "Microscopic dielectric permittivities of graphene nanoribbons and graphene."
 %       Phys. Rev. B 94 045318 (2016).
 
-function [E, psi] = main(nanostructure)
+function [param, config] = main(nanostructure)
     addpath('Plot Functions\'); % enable use of functions to plot results
     if nargin == 0
         nanostructure = 'Graphene'; % select graphene by default
@@ -41,7 +41,7 @@ function [E, psi] = main(nanostructure)
     config = struct(); % container for figure/axis settings
 
     % constants
-    Ry = 13.6; % Rydberg energy (eV)
+    param.Ry = 13.6; % Rydberg energy (eV)
     param.r_H = 5.2917725e-11; % atomic radius of hydrogen (Bohr radius, in m)
     a_d = 3.56683e-10/param.r_H; % diamond lattice constant
     param.r_C = 73e-12/param.r_H; % atomic radius of sp2-bonded carbon
@@ -68,11 +68,11 @@ function [E, psi] = main(nanostructure)
     param.N_a = 1; % number of primitive motifs along a tube within the supercell (axial); Set to 1 for an infinite tube.
     param.N_x = 0; % separation between finite ribbons or tubes in primitive translations (axial); Set to 0 for an infinite ribbon or tube.
     param.N_y = 4; % separation between ribbons in primitive translations (transverse in-plane)
-    param.N_z = 5; % separation between ribbons, tubes, or graphene sheets in primitive translations (transverse, out-of-plane for ribbons and graphene)
+    param.N_z = 3; % separation between ribbons, tubes, or graphene sheets in primitive translations (transverse, out-of-plane for ribbons and graphene)
 
     % figure/axis settings
-    config.E.lim = 20; % maximum energy shown in band plot (eV)
-    config.n_points = 300; % number of real- and reciprocal-space points
+    config.E.lim = 5; % maximum energy shown in band plot (eV)
+    config.n_points = 101; % number of real- and reciprocal-space points
     config.n_ticks = 6;
     config.E.label = '$E$ (eV)';
     config.psi2.label = '$|\psi|^2$';
@@ -85,18 +85,24 @@ function [E, psi] = main(nanostructure)
     [param, config] = select_param(param, config);
     if ~isfield(param,'tau')
         disp('Quasicrystal parameters cannot be determined.')
-        E = [];
-        psi = [];
         return;
     end
     if ~strcmpi(nanostructure,'graphene') % display supercell
-        plot_supercell(param, config.nanostructure);
+        plot_supercell(param, nanostructure);
     end
 
     % compute energy bands and corresponding wavefunctions
-    [E, psi] = bands(param, U_C_Kurokawa, U_H_Kurokawa);
+    param = bands(param, U_C_Kurokawa, U_H_Kurokawa);
 
     % plot results
-    plot_bands(E*Ry, config);
-    plot_wavefunc(psi, config);
+    plot_bands(param, config);
+    % plot_bands_2D(E*Ry, param.k, config);
+    % plot_wavefunc(psi, config);
+
+    % save data
+    disp('Saving data...');
+    tic
+    save(append('Data/',nanostructure),'-v7.3');
+    toc
+    disp('Finished.');
 end

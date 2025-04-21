@@ -4,7 +4,7 @@
 % Function called by main() to plot energy bands
 % Inputs:
 %   psi = cell of wavefunctions ordered by increasing eigenenergy
-%   config = container for axis settings
+%   config = container for figure/axis settings
 
 function plot_wavefunc(psi, config)
     R = (1:size(psi,1))';
