@@ -21,7 +21,7 @@ function plot_bands(param, config)
     xlabel('DOS ($10^{8}$ eV$^{-1}$ cm$^{-1}$)');
     ylim([-config.E.lim,config.E.lim]);
     sgtitle(config.nanostructure);
-    savefig(append('Figures/',config.nanostructure,'_bands.fig'));
+    % savefig(append('Figures/',config.nanostructure,'_bands.fig'));
 end
 
 function [x_DOS, D_E_per_eV_per_cm] = DOS(param)

@@ -19,6 +19,7 @@
 function param = bands(param, U_C, U_H)
 
     k = param.k;
+    dk = param.dk;
     R = param.R;
     R_gen = param.R_gen;
     tau = param.tau;
@@ -53,19 +54,29 @@ function param = bands(param, U_C, U_H)
     toc
     E = zeros(n_k,n_G);
     u = cell(n_k,1);
-    disp('Computing eigenvalues...');
+    grad_E = cell(n_k,1);
+    L = cell(n_k,1);
+    disp('Computing energy bands and DoS...');
     tic
     parfor i_k = 1:n_k
         T = (spdiags(sum(abs(G+ones(n_G,1)*k(i_k,:)).^2, 2), 0, n_G, n_G)); % diagonal (kinetic) elements of Hamiltonian
         [u_mat, E_mat] = eig(T+U); % eigenvalues of Hamiltonian
-        E(i_k,:) = sort(real(ones(1,n_G)*E_mat));
-        u{i_k} = sort(u_mat, 1);
+        [E(i_k,:),sort_idx] = sort(real(ones(1,n_G)*E_mat));
+        u{i_k} = u_mat(:,sort_idx);
+        grad_T = (spdiags(sum(2*(G(:,1)+ones(n_G,1)*k(i_k,1)+1i*(G(:,2)+ones(n_G,1)*k(i_k,2))), 2), 0, n_G, n_G));
+        i_dE = [eig(real(grad_T)), eig(imag(grad_T)), zeros(n_G,1)];
+        grad_E{i_k} = i_dE;
+        alpha = acos(i_dE(:,1)./vecnorm(i_dE,2,2));
+        w0 = (dk/2)*(cos(alpha)-sin(alpha));
+        w1 = w0 + dk*sin(alpha);
+        L{i_k} = @(w) (w<=w0).*(dk./cos(alpha)) + (w>=w0 && w<=w1).*(w1-w)./(cos(alpha).*sin(alpha));
     end
     n_C = sum(r_atom>1); % number of carbon atoms
     n_H = sum(r_atom==1); % number of hydrogen atoms
-    n_valence = (4*n_C+n_H)/2; % number of valence bands
-    param.E_bands = E - max(E(:,n_valence)); % rescale energy bands
+    param.n_valence = (4*n_C+n_H)/2; % number of valence bands
+    param.E_bands = E - max(E(:,param.n_valence)); % rescale energy bands
     param.u = u;
+    param.grad_E = grad_E;
     toc
 
     %{
