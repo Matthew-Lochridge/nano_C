@@ -55,21 +55,18 @@ function param = bands(param, U_C, U_H)
     E = zeros(n_k,n_G);
     u = cell(n_k,1);
     grad_E = cell(n_k,1);
-    L = cell(n_k,1);
+    dos = @(E_var) 0;
     disp('Computing energy bands and DoS...');
     tic
     parfor i_k = 1:n_k
-        T = (spdiags(sum(abs(G+ones(n_G,1)*k(i_k,:)).^2, 2), 0, n_G, n_G)); % diagonal (kinetic) elements of Hamiltonian
+        k_i = k(i_k,:);
+        T = (spdiags(sum(abs(G+ones(n_G,1)*k_i).^2, 2), 0, n_G, n_G)); % diagonal (kinetic) elements of Hamiltonian
         [u_mat, E_mat] = eig(T+U); % eigenvalues of Hamiltonian
         [E(i_k,:),sort_idx] = sort(real(ones(1,n_G)*E_mat));
         u{i_k} = u_mat(:,sort_idx);
-        grad_T = (spdiags(sum(2*(G(:,1)+ones(n_G,1)*k(i_k,1)+1i*(G(:,2)+ones(n_G,1)*k(i_k,2))), 2), 0, n_G, n_G));
-        i_dE = [eig(real(grad_T)), eig(imag(grad_T)), zeros(n_G,1)];
-        grad_E{i_k} = i_dE;
-        alpha = acos(i_dE(:,1)./vecnorm(i_dE,2,2));
-        w0 = (dk/2)*(cos(alpha)-sin(alpha));
-        w1 = w0 + dk*sin(alpha);
-        L{i_k} = @(w) (w<=w0).*(dk./cos(alpha)) + (w>=w0 && w<=w1).*(w1-w)./(cos(alpha).*sin(alpha));
+        grad_T = (spdiags(sum(2*(G(:,1)+ones(n_G,1)*k_i(1)+1i*(G(:,2)+ones(n_G,1)*k_i(2))), 2), 0, n_G, n_G));
+        i_dE = [real(eig(real(grad_T))), real(eig(imag(grad_T))), zeros(n_G,1)];
+        grad_E{i_k} = i_dE(sort_idx,:);
     end
     n_C = sum(r_atom>1); % number of carbon atoms
     n_H = sum(r_atom==1); % number of hydrogen atoms
@@ -77,16 +74,22 @@ function param = bands(param, U_C, U_H)
     param.E_bands = E - max(E(:,param.n_valence)); % rescale energy bands
     param.u = u;
     param.grad_E = grad_E;
+    abs_dE = vecnorm(grad_E,2,2);
+    alpha = acos(grad_E(:,1)./abs_dE);
+    w0 = (dk/2)*(cos(alpha)-sin(alpha));
+    w1 = w0 + dk*sin(alpha);
+    w = @(E_var) (E_var*ones(size(E_center))-E_center)./abs_dE;
+    L = @(E_var) (w(E_var)<=w0).*(dk./cos(alpha)) + (w(E_var)>=w0 && w(E_var)<=w1).*(w1-w(E_var))./(cos(alpha).*sin(alpha));
+    dos = @(E_var) dos(E_var) + (1/(2*pi^2))*sum(L(E_var)./abs_dE);
     toc
 
-    %{
     % compute wavefunctions
     n_psi = 1; % number of wavefunctions to compute, starting from the lowest band
     psi = zeros(n_R,n_k,n_psi);
     disp('Computing wavefunctions...');
     tic
     for i_psi = 1:n_psi
-        for i_k = 1:n_k
+        parfor i_k = 1:n_k
             for i_R = 1:n_R
                 psi(i_R,i_k,i_psi) = (1/V_cell)*sum(u{i_k}(:,i_psi).*exp(1i*dot(k(i_k,:).*ones(size(G))+G, R(i_R,:).*ones(size(G)), 2)), 1);
             end
@@ -94,5 +97,4 @@ function param = bands(param, U_C, U_H)
     end
     param.psi = psi;
     toc
-    %}
 end

@@ -3,11 +3,12 @@
 %
 % Function called by main() to plot energy bands
 % Inputs
-%   E = array of energy bands in Ry ordered as (k,G)
+%   param = container for nanostructure parameters
 %   config = container for figure/axis settings
 
 function plot_bands(param, config)
     [x_DOS, D_E_per_eV_per_cm] = DOS(param);
+    E = -config.E.lim:config.E.lim;
     figure();
     subplot(1,2,1);
     plot(param.E_bands*param.Ry);
@@ -17,7 +18,7 @@ function plot_bands(param, config)
     xticks(config.k.ticks);
     xticklabels(config.k.ticklabels);
     subplot(1,2,2);
-    stairs(D_E_per_eV_per_cm,x_DOS);
+    stairs(sum(param.DOS(E))/(100*param.r_H*param.Ry),E);
     xlabel('DOS ($10^{8}$ eV$^{-1}$ cm$^{-1}$)');
     ylim([-config.E.lim,config.E.lim]);
     sgtitle(config.nanostructure);

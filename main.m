@@ -97,7 +97,7 @@ function [param, config] = main(nanostructure)
     % plot results
     plot_bands(param, config);
     % plot_bands_2D(E*Ry, param.k, config);
-    % plot_wavefunc(psi, config);
+    plot_wavefunc(param, config);
 
     % save data
     disp('Saving data...');

@@ -3,10 +3,11 @@
 %
 % Function called by main() to plot energy bands
 % Inputs:
-%   psi = cell of wavefunctions ordered by increasing eigenenergy
+%   param = container for nanostructure parameters
 %   config = container for figure/axis settings
 
-function plot_wavefunc(psi, config)
+function plot_wavefunc(param, config)
+    psi = param.psi;
     R = (1:size(psi,1))';
     k = (1:size(psi,2))';
     figure();

@@ -34,10 +34,12 @@ function [param, config] = graphene(param, config)
     M = 2*pi/(3*param.a_CC)*[0 1 0];
     D = sqrt(vecnorm(K)^2 - vecnorm(M)^2)*[-1 0 0];
     n_step = config.n_points/3 - 1;
-
+    dk = vecnorm(D)/n_step;
+    param.dk = dk;
     
     % reciprocal-space path along boundary of irreducible wedge of BZ
-    param.k = [(1:-1/n_step:0)'*M; (0:1/n_step:1)'*K; (0:1/n_step:1)'*D + ones(n_step+1,3).*K];
+    param.k = [(1:-dk/vecnorm(M):1)'*M; (0:dk/vecnorm(K):1)'*K; (0:1/n_step:1)'*D + ones(n_step+1,3).*K];
+    config.n_points = size(param.k,1);
     config.k.ticks = [1, (n_step+1)+1, 2*(n_step+1)+1, 3*(n_step+1)-1];
     config.k.ticklabels = {'$M$' '$\Gamma$' '$K$' '$M$'};
     config.k.label = {'$k$'};

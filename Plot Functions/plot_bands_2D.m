@@ -3,11 +3,12 @@
 %
 % Function called by main() to plot energy bands in 2D reciprocal-space
 % Inputs
-%   E = array of energy bands in Ry ordered as (k,G)
-%   k = reciprocal-space points
+%   param = container for nanostructure parameters
 %   config = container for figure/axis settings
 
-function plot_bands_2D(E, k, config)
+function plot_bands_2D(param, config)
+    k = param.k;
+    E = param.E;
     if strcmpi(config.nanostructure,'graphene') 
         [k,E] = reflect(k,E,config.vertex,config.sym_proj); % reflect IBZ into full hexagonal BZ
     end
