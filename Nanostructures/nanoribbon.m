@@ -109,8 +109,8 @@ function [param, config] = nanoribbon(param, config)
         
     % k_x (armchair, Re) and k_y (zigzag, Im)
     k_max = pi./[vecnorm(param.R_gen(:,1)); vecnorm(param.R_gen(:,2))];
-    dk = k_max/(config.n_points-1);
-    param.k = (0:dk(1):k_max(1))'*[1 0 0] + (0:dk(2):k_max(2))'*[0 1i 0];
+    param.dk = k_max/(config.n_points-1);
+    param.k = (0:param.dk(1):k_max(1))'*[1 0 0] + (0:param.dk(2):k_max(2))'*[0 1i 0];
     config.k.label = {'$k_x \ (\pi/3a_{CC})$', '$k_y \ (\pi/\sqrt{3}a_{CC})$'};
     config.k.ticklabels = 0:1/(config.n_ticks-1):1;
     config.k.ticks = config.n_points*config.k.ticklabels;

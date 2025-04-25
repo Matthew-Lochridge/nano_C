@@ -11,7 +11,7 @@
 function [param, config] = select_param(param, config)
     addpath('Nanostructures\'); % enable use of functions to generate specified nanostructure parameters
 
-    [param, allotrope] = parse_input(param, config.nanostructure); % decompose input from main() into parameters and allotrope
+    [param, allotrope] = parse_input(param); % decompose input from main() into parameters and allotrope
 
     % define k, tau, r_atom, R_gen, and plot settings based on type and parameters
     if strcmpi(allotrope,'graphene')
@@ -19,7 +19,7 @@ function [param, config] = select_param(param, config)
         [param, config] = graphene(param, config);
 
     elseif isfield(param,'N_dw') && isfield(param,'N_dl') % nanoribbons
-        disp(append(config.nanostructure,' selected.'))
+        disp(append(param.nanostructure,' selected.'))
         if (param.N_dl == 2) && strcmpi(allotrope,'agnr')
             [param, config] = aNR(param, config);
         elseif (param.N_dl == 2) && strcmpi(allotrope,'zgnr')
@@ -29,7 +29,7 @@ function [param, config] = select_param(param, config)
         end
 
     elseif isfield(param,'N_1') && isfield(param,'N_2') % nanotubes
-        disp(append(config.nanostructure,' selected.'))
+        disp(append(param.nanostructure,' selected.'))
         k = [];
         tau = [];
         r_atom = [];

@@ -29,7 +29,7 @@ function plot_supercell(param, nanostructure)
     ylabel(config.ylabel);
     zlabel(config.zlabel);
     axis(config.limits);
-    title(config.title);
+    title(param.nanostructure);
     legend(config.legend);
     hold off;
 end

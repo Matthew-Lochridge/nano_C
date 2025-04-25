@@ -8,20 +8,25 @@
 
 function plot_bands_2D(param, config)
     k = param.k;
-    E = param.E;
+    E_band = param.E_band*param.Ry;
     if strcmpi(config.nanostructure,'graphene') 
-        [k,E] = reflect(k,E,config.vertex,config.sym_proj); % reflect IBZ into full hexagonal BZ
+        [k,E_band] = reflect(k,E_band,config.vertex,config.sym_proj); % reflect IBZ into full hexagonal BZ
     end
     figure();
-    plot3(k(:,1),k(:,2),E(:,1:10));
+    subplot(1,2,1);
+    plot3(k(:,1),k(:,2),E_band);
     hold off
     xlabel(config.k.label{1});
     ylabel(config.k.label{2});
     zlabel(config.E.label);
     zlim([-config.E.lim, config.E.lim]);
     text(config.k.sym_points(:,1),config.k.sym_points(:,2),config.k.sym_points(:,3),config.k.text);
-    title(config.nanostructure);
-    savefig(append('Figures/',config.nanostructure,'_BZ.fig'));
+    subplot(1,2,2);
+    stairs(12*param.DOS/((100*param.r_H)^2*param.Ry),param.E_DOS*param.Ry);
+    xlabel('DOS (eV$^{-1}$ cm$^{-2}$)');
+    ylim([-config.E.lim,config.E.lim]);
+    sgtitle(param.nanostructure);
+    savefig(append('Figures/',param.nanostructure,'_BZ.fig'));
 end
 
 function [k, E] = reflect(k, E, v, u)

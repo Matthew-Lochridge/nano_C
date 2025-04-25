@@ -9,7 +9,8 @@
 %   updated param
 %   allotrope = char vector defining the type of structure as 'graphene, 'agnr', 'zgnr', 'gnr', or 'cnt'
 
-function [param, allotrope] = parse_input(param, nanostructure)
+function [param, allotrope] = parse_input(param)
+    nanostructure = param.nanostructure;
     % default output
     allotrope = nanostructure;
 

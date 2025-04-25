@@ -23,6 +23,8 @@ function plot_wavefunc(param, config)
     xticklabels(config.R.ticklabels);
     yticks(config.k.ticks);
     yticklabels(config.k.ticklabels);
-    title(config.nanostructure);
-    savefig(append('Figures/',config.nanostructure,'_wavefunc.fig'));
+    xlim([R(1) R(end)]);
+    ylim([k(1) k(end)]);
+    title(param.nanostructure);
+    savefig(append('Figures/',param.nanostructure,'_wavefunc.fig'));
 end

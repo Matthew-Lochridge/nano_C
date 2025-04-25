@@ -6,7 +6,7 @@
 %   nanostructure = name of nanostructure as a char vector,
 %                   e.g. '9-AGNR', '8-ZGNR', '(5,5)-CNT', etc.
 %                   If unspecified, 'graphene' is called by default.
-% Output:
+% Output (saved in Data/nanostructure.mat):
 %   param = struct containing crystal parameters, energy bands, etc.
 %   config = figure/plot settings
 %
@@ -32,7 +32,7 @@
 %       "Microscopic dielectric permittivities of graphene nanoribbons and graphene."
 %       Phys. Rev. B 94 045318 (2016).
 
-function [param, config] = main(nanostructure)
+function main(nanostructure)
     addpath('Plot Functions\'); % enable use of functions to plot results
     if nargin == 0
         nanostructure = 'Graphene'; % select graphene by default
@@ -68,16 +68,16 @@ function [param, config] = main(nanostructure)
     param.N_a = 1; % number of primitive motifs along a tube within the supercell (axial); Set to 1 for an infinite tube.
     param.N_x = 0; % separation between finite ribbons or tubes in primitive translations (axial); Set to 0 for an infinite ribbon or tube.
     param.N_y = 4; % separation between ribbons in primitive translations (transverse in-plane)
-    param.N_z = 5; % separation between ribbons, tubes, or graphene sheets in primitive translations (transverse, out-of-plane for ribbons and graphene)
+    param.N_z = 3; % separation between ribbons, tubes, or graphene sheets in primitive translations (transverse, out-of-plane for ribbons and graphene)
 
     % figure/axis settings
-    config.E.lim = 20; % maximum energy shown in band plot (eV)
-    config.n_points = 300; % number of real- and reciprocal-space points
+    param.nanostructure = nanostructure;
+    config.E.lim = 5; % maximum energy shown in band plot (eV)
+    config.n_points = 101; % number of real- and reciprocal-space points
     config.n_ticks = 6;
     config.E.label = '$E$ (eV)';
     config.psi2.label = '$|\psi|^2$';
     config.interpreter = 'latex';
-    config.nanostructure = nanostructure;
     set(groot,'defaultTextInterpreter',config.interpreter);
     set(groot,'defaultAxesTickLabelInterpreter',config.interpreter);
 
@@ -93,16 +93,16 @@ function [param, config] = main(nanostructure)
 
     % compute energy bands and corresponding wavefunctions
     param = bands(param, U_C_Kurokawa, U_H_Kurokawa);
-
-    % plot results
-    plot_bands(param, config);
-    % plot_bands_2D(E*Ry, param.k, config);
-    plot_wavefunc(param, config);
-
+    
     % save data
     disp('Saving data...');
     tic
     save(append('Data/',nanostructure),'-v7.3');
     toc
     disp('Finished.');
+
+    % plot results
+    plot_bands(param, config);
+    % plot_bands_2D(param, config);
+    plot_wavefunc(param, config);
 end

@@ -34,11 +34,10 @@ function [param, config] = graphene(param, config)
     M = 2*pi/(3*param.a_CC)*[0 1 0];
     D = sqrt(vecnorm(K)^2 - vecnorm(M)^2)*[-1 0 0];
     n_step = config.n_points/3 - 1;
-    dk = vecnorm(D)/n_step;
-    param.dk = dk;
+    param.dk = vecnorm(D)/n_step;
     
     % reciprocal-space path along boundary of irreducible wedge of BZ
-    param.k = [(1:-dk/vecnorm(M):1)'*M; (0:dk/vecnorm(K):1)'*K; (0:1/n_step:1)'*D + ones(n_step+1,3).*K];
+    param.k = [(1:-param.dk/vecnorm(M):1)'*M; (0:param.dk/vecnorm(K):1)'*K; (0:1/n_step:1)'*D + ones(n_step+1,3).*K];
     config.n_points = size(param.k,1);
     config.k.ticks = [1, (n_step+1)+1, 2*(n_step+1)+1, 3*(n_step+1)-1];
     config.k.ticklabels = {'$M$' '$\Gamma$' '$K$' '$M$'};
@@ -49,8 +48,8 @@ function [param, config] = graphene(param, config)
     dK = (0:1/n_step:1)'*K;
     IBZ = [];
     for n = 1:n_step+1
-        y_slice = (vecnorm(M):-vecnorm(K)/n_step:dK(n,2))';
-        IBZ = [IBZ; [dK(n,1)*ones(size(y_slice)) y_slice zeros(size(y_slice))]];
+        y_slice = (vecnorm(M):-param.dk:dK(n,2))';
+        IBZ = [IBZ; [dK(n,1)*ones(size(y_slice)), y_slice, zeros(size(y_slice))]];
     end
     param.k = IBZ;
     config.k.label = {'$k_x$' '$k_y$'};

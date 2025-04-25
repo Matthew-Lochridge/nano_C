@@ -62,8 +62,8 @@ function [param, config] = zNR(param, config)
 
     % reciprocal-space path along ribbon axis
     k_max = pi/vecnorm(param.R_gen(:,1));
-    dk = k_max/(config.n_points-1);
-    param.k = (0:dk:k_max)'*[1 0 0];
+    param.dk = k_max/(config.n_points-1);
+    param.k = (0:param.dk:k_max)'*[1 0 0];
     config.k.label = {'$k_x \ (\pi/\sqrt{3}a_{CC})$'};
     config.k.ticklabels = 0:1/(config.n_ticks-1):1;
     config.k.ticks = config.n_points*config.k.ticklabels;
