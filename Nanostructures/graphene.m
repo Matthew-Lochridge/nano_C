@@ -14,15 +14,17 @@
 %       Springer (2016).
 
 function [param, config] = graphene(param, config)
+
+    a_CC = param.a_CC_graphene;
     
     % atom positions in primitive cell
-    param.tau = (param.a_CC/2)*[0 0; -1 1; 0 0];
+    param.tau = (a_CC/2)*[0 0; -1 1; 0 0];
 
     % atomic radii
     param.r_atom = param.r_C*[1 1];
 
     % primitive superlattice vectors
-    param.R_gen = sqrt(3)*param.a_CC*[1/2 -1/2 0; sqrt(3)/2 sqrt(3)/2 0; 0 0 param.N_z];
+    param.R_gen = sqrt(3)*a_CC*[1/2 -1/2 0; sqrt(3)/2 sqrt(3)/2 0; 0 0 param.N_z];
 
     % real-space path along which to evaluate wavefunctions
     param.R = (0:1/(config.n_points-1):1)'*(param.R_gen(:,1)-param.R_gen(:,2))';
@@ -30,14 +32,14 @@ function [param, config] = graphene(param, config)
     config.R.ticklabels = 0:1/(config.n_ticks-1):1;
     config.R.ticks = config.n_points*config.R.ticklabels;
 
-    K = 4*pi/(3*sqrt(3)*param.a_CC)*[1/2 sqrt(3)/2 0];
-    M = 2*pi/(3*param.a_CC)*[0 1 0];
+    K = 4*pi/(3*sqrt(3)*a_CC)*[1/2 sqrt(3)/2 0];
+    M = 2*pi/(3*a_CC)*[0 1 0];
     D = sqrt(vecnorm(K)^2 - vecnorm(M)^2)*[-1 0 0];
     n_step = config.n_points/3 - 1;
     param.dk = vecnorm(D)/n_step;
     
     % reciprocal-space path along boundary of irreducible wedge of BZ
-    param.k = [(1:-param.dk/vecnorm(M):1)'*M; (0:param.dk/vecnorm(K):1)'*K; (0:1/n_step:1)'*D + ones(n_step+1,3).*K];
+    param.k = [(1:-1/n_step:0)'*M; (0:1/n_step:1)'*K; (0:1/n_step:1)'*D + ones(n_step+1,3).*K];
     config.n_points = size(param.k,1);
     config.k.ticks = [1, (n_step+1)+1, 2*(n_step+1)+1, 3*(n_step+1)-1];
     config.k.ticklabels = {'$M$' '$\Gamma$' '$K$' '$M$'};

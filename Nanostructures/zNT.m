@@ -16,8 +16,8 @@
 
 function [param, config] = zNT(N_1, param, config)
 
-    a_CC = param.a_CC;
-    a_CH = param.a_CH;
+    a_CC = param.a_CC_graphene;
+    a_CH = param.a_CH_graphene;
     N_a = param.N_a;
     N_x = param.N_x;
     N_z = param.N_z;
@@ -68,13 +68,7 @@ function [param, config] = zNT(N_1, param, config)
 
     % generators of superlattice vectors
     tau_range = range(tau,2);
-    param.R_gen = [(N_x>0)*(tau_range(1)+N_x*3*a_CC)+(N_x==0)*3*a_CC 0 0; 0 tau_range(2)+N_z*sqrt(3)*a_CC 0; 0 0 tau_range(3)+N_z*sqrt(3)*a_CC];
-
-    % real-space path along tube axis
-    param.R = (0:1/(config.n_points-1):1)'*(param.R_gen(:,1))';
-    config.R.label = {'$x \ (3a_{CC})$'};
-    config.R.ticklabels = 0:1/(config.n_ticks-1):1;
-    config.R.ticks = config.n_points*config.R.ticklabels;
+    param.R_gen = [(N_x>0)*(tau_range(1)+N_x*3*a_CC)+(N_x==0)*3*a_CC 0 0; 0 N_z 0; 0 0 N_z];
 
     % reciprocal-space path along tube axis
     k_max = pi/vecnorm(param.R_gen(:,1));

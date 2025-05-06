@@ -18,6 +18,10 @@ function [param, config] = select_param(param, config)
         disp('Graphene selected (default).')
         [param, config] = graphene(param, config);
 
+    elseif strcmpi(allotrope,'ppp')
+        disp('Polyparaphenylene (PPP) selected.');
+        [param, config] = PPP(param, config);
+
     elseif isfield(param,'N_dw') && isfield(param,'N_dl') % nanoribbons
         disp(append(param.nanostructure,' selected.'))
         if (param.N_dl == 2) && strcmpi(allotrope,'agnr')
@@ -31,10 +35,10 @@ function [param, config] = select_param(param, config)
     elseif isfield(param,'N_1') && isfield(param,'N_2') % nanotubes
         disp(append(param.nanostructure,' selected.'))
         k = [];
+        dk = [];
         tau = [];
         r_atom = [];
         R_gen = [];
-        R = [];
         N_1 = param.N_1;
         N_2 = param.N_2;
         circ = zeros(size(N_1));
@@ -54,16 +58,16 @@ function [param, config] = select_param(param, config)
             circ(t) = circ_func(N_1(t),N_2(t));
             if circ(t) == max(circ)
                 k = param_t.k;
-                R = param_t.R;
+                dk = param_t.dk;
                 R_gen = param_t.R_gen;
                 config = config_t;
             end
         end
         param.k = k;
+        param.dk = dk;
         param.tau = tau;
         param.r_atom = r_atom;
         param.R_gen = R_gen;
-        param.R = R;
     end
 end
 

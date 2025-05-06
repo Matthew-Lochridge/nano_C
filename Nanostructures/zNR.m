@@ -15,8 +15,8 @@
 
 function [param, config] = zNR(param, config)
 
-    a_CC = param.a_CC;
-    a_CH = param.a_CH;
+    a_CC = param.a_CC_graphene;
+    a_CH = param.a_CH_graphene;
 
     x_hat = [1; 0; 0]; % unit vector along ribbon length
     y_hat = [0; 1; 0]; % unit vector along ribbon width
@@ -52,13 +52,7 @@ function [param, config] = zNR(param, config)
     param.r_atom(1:n_C) = param.r_C;
 
     % generators of superlattice vectors
-    param.R_gen = [sqrt(3)*a_CC 0 0; 0 range(tau(2,:))+param.N_y*3*a_CC 0; 0 0 param.N_z*3*a_CC];
-
-    % real-space path along ribbon axis
-    param.R = (0:1/(config.n_points-1):1)'*(param.R_gen(:,1))';
-    config.R.label = {'$x \ (\sqrt{3}a_{CC})$'};
-    config.R.ticklabels = 0:1/(config.n_ticks-1):1;
-    config.R.ticks = config.n_points*config.R.ticklabels;
+    param.R_gen = [sqrt(3)*a_CC 0 0; 0 range(tau(2,:))+param.N_y*sqrt(3)*a_CC 0; 0 0 param.N_z*sqrt(3)*a_CC];
 
     % reciprocal-space path along ribbon axis
     k_max = pi/vecnorm(param.R_gen(:,1));

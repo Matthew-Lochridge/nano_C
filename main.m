@@ -4,7 +4,7 @@
 % Main function to compute energy bands of carbon nanostructures.
 % Input:
 %   nanostructure = name of nanostructure as a char vector,
-%                   e.g. '9-AGNR', '8-ZGNR', '(5,5)-CNT', etc.
+%                   e.g. 'Graphene', 'PPP', '5-AGNR', '4-ZGNR', '(5,5)-CNT', etc.
 %                   If unspecified, 'graphene' is called by default.
 % Output (saved in Data/nanostructure.mat):
 %   param = struct containing crystal parameters, energy bands, etc.
@@ -27,10 +27,6 @@
 %   [6] B. Liu, S. G. Johnson, J. D. Joannopoulos, and L. Lu.
 %       "Generalized Gilat–Raubenheimer method for density-of-states calculation in photonic crystals."
 %       J. Opt. 20 044005 (2018)
-%   [7] P. Hadley, cnt.m (TU Graz)
-%   [8] J. Fang, W. G. Vandenberghe, and M. V. Fischetti. 
-%       "Microscopic dielectric permittivities of graphene nanoribbons and graphene."
-%       Phys. Rev. B 94 045318 (2016).
 
 function main(nanostructure)
     addpath('Plot Functions\'); % enable use of functions to plot results
@@ -45,8 +41,11 @@ function main(nanostructure)
     param.r_H = 5.2917725e-11; % atomic radius of hydrogen (Bohr radius, in m)
     a_d = 3.56683e-10/param.r_H; % diamond lattice constant
     param.r_C = 73e-12/param.r_H; % atomic radius of sp2-bonded carbon
-    param.a_CC = 1.42e-10/param.r_H; % carbon-carbon bond length in graphene
-    param.a_CH = 1.0919e-10/param.r_H; % carbon-hydrogen bond length in methane
+    param.a_CC_graphene = 1.42e-10/param.r_H; % carbon-carbon bond length in graphene
+    param.a_CH_graphene = 1.0919e-10/param.r_H; % carbon-hydrogen bond length in methane
+    param.a_CC_PPP_hi = 1.478e-10/param.r_H; % carbon-carbon bond length in polyparaphenylene (triply-bonded to carbon)
+    param.a_CC_PPP_lo = 1.396e-10/param.r_H; % carbon-carbon bond length in polyparaphenylene (edges)
+    param.a_CH_PPP = 1.184e-10/param.r_H; % carbon-hydrogen bond length in polyparaphenylene
 
     % empirical pseudopotentials normalized to the volume of a carbon atom in diamond [2]
     b_C = [1.781, 1.424, 0.354, 0.938]; % empirical parameters for carbon
@@ -62,21 +61,19 @@ function main(nanostructure)
 
     % cutoff parameters
     param.E_cut = 15; % cutoff energy (Ry)
-    param.max_G = 20; % maximum manhattan distance of G vectors
+    param.max_G = 100; % maximum manhattan distance of G vectors
 
     % supercell size parameters
     param.N_a = 1; % number of primitive motifs along a tube within the supercell (axial); Set to 1 for an infinite tube.
     param.N_x = 0; % separation between finite ribbons or tubes in primitive translations (axial); Set to 0 for an infinite ribbon or tube.
     param.N_y = 4; % separation between ribbons in primitive translations (transverse in-plane)
-    param.N_z = 3; % separation between ribbons, tubes, or graphene sheets in primitive translations (transverse, out-of-plane for ribbons and graphene)
+    param.N_z = 15e-10/param.r_H; % separation between graphene sheets and ribbons in primitive translations (transverse out-of-plane), or supercell cross-section length for tubes
 
     % figure/axis settings
     param.nanostructure = nanostructure;
     config.E.lim = 5; % maximum energy shown in band plot (eV)
     config.n_points = 101; % number of real- and reciprocal-space points
     config.n_ticks = 6;
-    config.E.label = '$E$ (eV)';
-    config.psi2.label = '$|\psi|^2$';
     config.interpreter = 'latex';
     set(groot,'defaultTextInterpreter',config.interpreter);
     set(groot,'defaultAxesTickLabelInterpreter',config.interpreter);
@@ -88,7 +85,7 @@ function main(nanostructure)
         return;
     end
     if ~strcmpi(nanostructure,'graphene') % display supercell
-        plot_supercell(param, nanostructure);
+        plot_supercell(param);
     end
 
     % compute energy bands and corresponding wavefunctions
@@ -99,10 +96,15 @@ function main(nanostructure)
     tic
     save(append('Data/',nanostructure),'-v7.3');
     toc
-    disp('Finished.');
 
     % plot results
+    disp('Plotting band structure...');
+    tic
     plot_bands(param, config);
-    % plot_bands_2D(param, config);
-    plot_wavefunc(param, config);
+    toc
+    disp('Plotting wavefunctions...')
+    tic
+    plot_wavefunc(param);
+    toc
+    disp('Finished.');
 end

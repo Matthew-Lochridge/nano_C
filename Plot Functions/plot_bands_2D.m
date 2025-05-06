@@ -26,7 +26,7 @@ function plot_bands_2D(param, config)
     xlabel('DOS (eV$^{-1}$ cm$^{-2}$)');
     ylim([-config.E.lim,config.E.lim]);
     sgtitle(param.nanostructure);
-    savefig(append('Figures/',param.nanostructure,'_BZ.fig'));
+    savefig(append('Figures/',param.nanostructure,'_BZ_DoS.fig'));
 end
 
 function [k, E] = reflect(k, E, v, u)

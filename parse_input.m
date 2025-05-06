@@ -1,12 +1,12 @@
 % Author: Matthew Lochridge
 % Term Project for MSEN 5377 (Spring 2025)
 % 
-% Function called by select_param() to parse nanostructure input for selected nanoribbon or nanotube parameters.
+% Function called by select_param() to parse nanostructure input for carbon allotrope and lattice parameters (nanoribbons and nanotubes).
 % Inputs:
 %   param = container for nanostructure parameters
 %   nanostructure = input from main()
 % Outputs:
-%   updated param
+%   updated param with lattice parameters (nanoribbon or nanotube)
 %   allotrope = char vector defining the type of structure as 'graphene, 'agnr', 'zgnr', 'gnr', or 'cnt'
 
 function [param, allotrope] = parse_input(param)
@@ -19,6 +19,9 @@ function [param, allotrope] = parse_input(param)
         err = "Carbon nanostructure not properly specified: accepted formats are 'n-AGNR', 'n-ZGNR', '(n,m)-GNR' and '(n1,m1)@(n2,m2)@...-CNT' for integer n's and m's.";
 
         if strcmpi(nanostructure,'graphene')
+            return;
+
+        elseif strcmpi(nanostructure,'ppp')
             return;
 
         else
